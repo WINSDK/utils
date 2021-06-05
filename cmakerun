@@ -1,0 +1,43 @@
+#!/usr/bin/python3
+import subprocess as sp
+import argparse
+import os
+
+CHDIR = os.getcwd()
+
+
+def main(args: list):
+    path = ""
+    if args['release']:
+        path = "Release"
+    else:
+        path = "Debug"
+
+    try:
+        os.mkdir(path)
+    except FileExistsError:
+        pass
+    os.chdir(path)
+    try:
+        sp.run(["cmake", "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+                "-DCMAKE_BUILD_TYPE=" + path, ".."],
+               capture_output=True, check=True)
+        sp.run(["cmake", "--build", "."], capture_output=True, check=True)
+
+        os.chdir(CHDIR)
+        sp.run(["./" + path + "/sha-2"] + args['stdin'])
+    except sp.CalledProcessError:
+        os.rmdir("../" + path)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="do the cmake run thing",
+        usage="cmakerun [--release | -r] ..")
+    parser.add_argument("-r", "--release", action="store_true",
+                        help="build using optimizations")
+    parser.add_argument('stdin', nargs='*')
+    args = parser.parse_args()
+    args = vars(args)
+
+    main(args)
