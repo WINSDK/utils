@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import subprocess as sp
 import argparse
+import re
 import os
 
 CHDIR = os.getcwd()
@@ -22,10 +23,17 @@ def main(args: list):
         sp.run(["cmake", "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
                 "-DCMAKE_BUILD_TYPE=" + path, ".."],
                capture_output=True, check=True)
-        sp.run(["cmake", "--build", "."], capture_output=True, check=True)
+
+        out = sp.run(["cmake", "--build", "."],
+                     capture_output=True, check=True)
+        out = re.search("Built target (.*)", str(out.stdout)).group(1)
+        out = out[:len(out) - 3]
+
+        if os.name != "posix":
+            out += ".exe"
 
         os.chdir(CHDIR)
-        sp.run(["./" + path + "/sha-2"] + args['stdin'])
+        sp.run(["./" + path + "/" + out] + args['stdin'])
     except sp.CalledProcessError:
         os.rmdir("../" + path)
 
