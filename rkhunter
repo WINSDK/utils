@@ -1,0 +1,6 @@
+#!/bin/zsh
+
+local path_temp=${PATH}
+PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin"
+rkhunter $1
+PATH=${path_temp}
