@@ -5,8 +5,7 @@ import os
 
 CHDIR = os.getcwd()
 
-
-def main(args: list):
+def main(args: dict):
     path = ""
     if args['release']:
         path = "Release"
