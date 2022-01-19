@@ -1,7 +1,9 @@
+#![feature(panic_info_message)]
+
 fn sizeof_fmt(mut num: f64) -> String {
     for unit in ["B", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"] {
         if num.abs() < 1024.0 {
-            return format!("{num:3.1}{unit}")
+            return format!("{num:3.1}{unit}");
         }
 
         num /= 1024.0;
@@ -11,9 +13,7 @@ fn sizeof_fmt(mut num: f64) -> String {
 }
 
 fn main() -> reqwest::Result<()> {
-    std::panic::set_hook(Box::new(|info| unsafe {
-        println!("{}", *info.payload().downcast_ref::<&str>().unwrap_unchecked()) 
-    }));
+    std::panic::set_hook(Box::new(|info| println!("{}", info.message().unwrap())));
 
     let mut repo = std::env::args()
         .skip(1)
@@ -52,7 +52,9 @@ fn main() -> reqwest::Result<()> {
             .user_agent(USER_AGENT)
             .build()?;
 
-        client.get(format!("https://api.github.com/repos/{repo}")).send()?
+        client
+            .get(format!("https://api.github.com/repos/{repo}"))
+            .send()?
     };
 
     if let Err(status) = req.error_for_status_ref() {
@@ -141,5 +143,5 @@ struct GitResponse {
     watchers: usize,
     default_branch: String,
     network_count: usize,
-    subscribers_count: usize
+    subscribers_count: usize,
 }
